@@ -6,6 +6,19 @@ user-invocable: false
 
 # Review Criteria
 
+## Two-Axis Review — Standards + Spec (never merged)
+
+Cannibalized from mattpocock/skills `code-review` (2026-07-12). A change is judged on two independent axes:
+
+- **Standards axis** — does the code follow documented standards? (the checklist + smell baseline below)
+- **Spec axis** — does the implementation actually do what the original issue / PRD / acceptance criteria asked for?
+
+Rules:
+
+- When a review covers both axes, run them as **separate passes** (parallel sub-agents when dispatched — they must not pollute each other's context); the aggregator only collects.
+- **Do NOT merge or rerank findings across axes.** Report a verdict **per axis** — never a single winner across both. Code that follows every standard but implements the wrong thing is `Standards: pass, Spec: fail`, and that split state is exactly the information the separation exists to preserve.
+- The single `verdict` field in `schemas/review-output.schema.json` applies to **single-axis runs only**; a two-axis run emits one structured result per axis. (Schema evolution to a native two-axis shape is a tracked follow-up — do not hand-edit the schema ad hoc; `code-review-interceptor` consumes it.)
+
 ## Standard Review Checklist
 
 ### Security (Critical)
@@ -26,6 +39,23 @@ user-invocable: false
 - No dead code or unused imports
 - Naming: snake_case for Python, camelCase for TypeScript
 - Type hints on public function signatures
+
+### Code Smells — Fowler baseline (Standards axis)
+
+Cannibalized from mattpocock/skills `code-review` (2026-07-12). Documented Workshop standards above take precedence; these twelve apply even where no documented standard exists. One line each: smell → fix.
+
+- **Mysterious Name** — a name that doesn't reveal what the thing does → rename to reveal intent
+- **Duplicated Code** — same logic in more than one place → extract a shared function
+- **Feature Envy** — a method more interested in another module's data than its own → move it there
+- **Data Clumps** — the same group of fields/params always traveling together → extract a type/object
+- **Primitive Obsession** — domain concepts passed around as bare strings/ints → introduce a domain type
+- **Repeated Switches** — the same switch/if-chain reappearing across the codebase → polymorphism or a dispatch table
+- **Shotgun Surgery** — one logical change forcing edits across many files → consolidate the responsibility
+- **Divergent Change** — one module changing for many unrelated reasons → split it by reason for change
+- **Speculative Generality** — hooks/params for futures that never arrived → delete (YAGNI; cf. coding-discipline §1)
+- **Message Chains** — `a.b().c().d()` reaching through objects → hide the delegate
+- **Middle Man** — a class that only delegates → inline it, call the target directly
+- **Refused Bequest** — a subclass ignoring/overriding most of its parent → prefer composition over inheritance
 
 ### Performance
 - N+1 query prevention (use joinedload/selectinload)
