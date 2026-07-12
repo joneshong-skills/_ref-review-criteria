@@ -17,7 +17,7 @@ Rules:
 
 - When a review covers both axes, run them as **separate passes** (parallel sub-agents when dispatched — they must not pollute each other's context); the aggregator only collects.
 - **Do NOT merge or rerank findings across axes.** Report a verdict **per axis** — never a single winner across both. Code that follows every standard but implements the wrong thing is `Standards: pass, Spec: fail`, and that split state is exactly the information the separation exists to preserve.
-- The single `verdict` field in `schemas/review-output.schema.json` applies to **single-axis runs only**; a two-axis run emits one structured result per axis. (Schema evolution to a native two-axis shape is a tracked follow-up — do not hand-edit the schema ad hoc; `code-review-interceptor` consumes it.)
+- `schemas/review-output.schema.json` supports two-axis runs natively (2026-07-12): populate `axes.standards` / `axes.spec` with per-axis verdicts and tag every finding with its `axis`. The top-level `verdict` is then the **mechanical worst-of gate** across axes (ship only if both pass) — a computation, not a judgment merge; the per-axis verdicts carry the real information. Single-axis runs omit `axes`/`axis` and behave exactly as before. (Verified consumers of this schema: this file + `agents/reviewer.md` only — an earlier note claiming `code-review-interceptor` consumes it was wrong; it never references the schema.)
 
 ## Standard Review Checklist
 

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Workshop Structured Review Output",
+  "description": "Cannibalized from openai/codex-plugin-cc review-output.schema.json. Adapted for Workshop reviewer agent. Two-axis support (Standards+Spec, never merged) cannibalized from mattpocock/skills code-review.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verdict", "summary", "findings", "next_steps"],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["approve", "needs-attention", "critical-block"],
+      "description": "approve: safe to ship. needs-attention: issues found but not blocking. critical-block: must fix before merge. On two-axis runs this is the MECHANICAL worst-of gate across axes (never a judgment merge) — the per-axis verdicts in `axes` carry the real information."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Terse ship/no-ship assessment, not a neutral recap."
+    },
+    "axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "REQUIRED on two-axis runs (Standards + Spec), omitted on single-axis runs. Each axis gets its own verdict; do NOT collapse them — 'Standards: approve, Spec: critical-block' is a real state the separation exists to preserve. Top-level verdict = worst of the axis verdicts, computed mechanically.",
+      "properties": {
+        "standards": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["verdict"],
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "enum": ["approve", "needs-attention", "critical-block"]
+            },
+            "summary": {
+              "type": "string",
+              "description": "One-line: does the code follow documented standards + smell baseline?"
+            }
+          }
+        },
+        "spec": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["verdict"],
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "enum": ["approve", "needs-attention", "critical-block"]
+            },
+            "summary": {
+              "type": "string",
+              "description": "One-line: does the implementation do what the issue/PRD/acceptance criteria asked for?"
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "title", "body", "file", "line_start", "recommendation"],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "axis": {
+            "type": "string",
+            "enum": ["standards", "spec"],
+            "description": "Which axis this finding belongs to. REQUIRED on two-axis runs, omitted on single-axis runs."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What can go wrong + why this code path is vulnerable + likely impact."
+          },
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "line_start": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "line_end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "0.0 = speculation, 1.0 = certain from code evidence."
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "Concrete change that would reduce the risk."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "security", "architecture", "data-integrity", "race-condition",
+              "error-handling", "performance", "observability", "testing"
+            ]
+          }
+        }
+      }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
