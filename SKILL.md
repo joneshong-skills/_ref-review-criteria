@@ -2,6 +2,7 @@
 name: _ref-review-criteria
 description: "Code review criteria, adversarial review mode, and structured output schema reference"
 user-invocable: false
+disable-model-invocation: true
 ---
 
 # Review Criteria
