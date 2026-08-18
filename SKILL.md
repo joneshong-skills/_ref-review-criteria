@@ -7,6 +7,20 @@ disable-model-invocation: true
 
 # Review Criteria
 
+## Reviewer Input Contract
+
+Cannibalized from `Vincentwei1021/video-shotcraft` `references/final-review.md` (2026-08-19), corroborated by `heygen-com/hyperframes` (verification moved off the worker onto the orchestrator, because a worker only sees its own file and green-lights the rest).
+
+Before dispatching a reviewer, hand it an explicit list of the inputs this review needs, and hold to three rules:
+
+- **A missing input is reported as "cannot verify"**, never guessed at. "Cannot verify" is a legitimate third verdict — it is not folded into pass and not folded into fail. Say which input was missing and why it could not be obtained.
+- **When sources disagree, report the conflict and name the conflicting sources** (index vs docs vs source vs sample). Do not silently pick one as the truth.
+- **Never feed the reviewer the maker's rationale, defense, revision history, or expected conclusion.** Those turn a frame that is still under test into a frame already accepted, and the review degrades into local optimization inside the maker's premises. The reviewer runs on a clean context and does not participate in production.
+
+Report format: numbered items, one verdict each, every ✗ carrying an evidence coordinate (`file:line`, frame number, screenshot path). An evidence-free "looks fine overall" does not substitute for per-item checks, and marking everything pass to make the report look clean is a failed review, not a passing one.
+
+Evidence for a verdict must not be produced by the party under review — see `~/.claude/rules/agents.md` (Evaluator isolation, structured sidecar).
+
 ## Two-Axis Review — Standards + Spec (never merged)
 
 Cannibalized from mattpocock/skills `code-review` (2026-07-12). A change is judged on two independent axes:
